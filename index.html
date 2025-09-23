@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intelligence Dashboard - Legal Case Analytics</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link href="style.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-chart-line me-2"></i>
+                Intelligence Dashboard
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#overview">Overview</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#top-cases">Top Cases</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#courts">Courts</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#advocates">Advocates</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid mt-4">
+        <!-- Loading Indicator -->
+        <div id="loading" class="text-center my-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Loading dashboard data...</p>
+        </div>
+
+        <!-- Dashboard Content -->
+        <div id="dashboard-content" style="display: none;">
+            <!-- Overview Section -->
+            <section id="overview" class="mb-5">
+                <div class="row">
+                    <div class="col-12">
+                        <h2 class="section-title">
+                            <i class="fas fa-tachometer-alt"></i>
+                            Dashboard Overview
+                        </h2>
+                    </div>
+                </div>
+
+                <!-- Key Metrics -->
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="card metric-card">
+                            <div class="card-body text-center">
+                                <h3 id="total-cases" class="metric-number">0</h3>
+                                <p class="metric-label">Total Cases</p>
+                                <i class="fas fa-gavel metric-icon"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card metric-card">
+                            <div class="card-body text-center">
+                                <h3 id="total-value" class="metric-number">₹0</h3>
+                                <p class="metric-label">Total Case Value</p>
+                                <i class="fas fa-coins metric-icon"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card metric-card">
+                            <div class="card-body text-center">
+                                <h3 id="pending-cases" class="metric-number">0</h3>
+                                <p class="metric-label">Pending Cases</p>
+                                <i class="fas fa-clock metric-icon"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card metric-card">
+                            <div class="card-body text-center">
+                                <h3 id="disposed-cases" class="metric-number">0</h3>
+                                <p class="metric-label">Disposed Cases</p>
+                                <i class="fas fa-check-circle metric-icon"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Row -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card chart-card">
+                            <div class="card-header">
+                                <h5><i class="fas fa-chart-pie me-2"></i>Cases by Court</h5>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="courtChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card chart-card">
+                            <div class="card-header">
+                                <h5><i class="fas fa-chart-line me-2"></i>Cases by Year</h5>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="yearChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Top Cases Section -->
+            <section id="top-cases" class="mb-5">
+                <div class="row">
+                    <div class="col-12">
+                        <h2 class="section-title">
+                            <i class="fas fa-trophy"></i>
+                            Top Cases by Value
+                        </h2>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5>Top 1000 Cases by Case Value</h5>
+                                <div>
+                                    <input type="number" id="topCasesLimit" class="form-control d-inline-block" 
+                                           style="width: 100px;" value="10" min="1" max="1000">
+                                    <button class="btn btn-primary btn-sm ms-2" onclick="updateTopCases()">
+                                        Update
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Sr. No.</th>
+                                                <th>Plaintiff</th>
+                                                <th>Defendant</th>
+                                                <th>Case Value (PKR)</th>
+                                                <th>Court</th>
+                                                <th>Year</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="topCasesTable">
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Courts Analysis Section -->
+            <section id="courts" class="mb-5">
+                <div class="row">
+                    <div class="col-12">
+                        <h2 class="section-title">
+                            <i class="fas fa-balance-scale"></i>
+                            Court-wise Analysis
+                        </h2>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="card chart-card">
+                            <div class="card-header">
+                                <h5><i class="fas fa-chart-bar me-2"></i>Court Workload Distribution</h5>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="courtWorkloadChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5>Court Statistics</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Court</th>
+                                                <th>Cases</th>
+                                                <th>Value (Cr)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="courtStatsTable">
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Advocates Section -->
+            <section id="advocates" class="mb-5">
+                <div class="row">
+                    <div class="col-12">
+                        <h2 class="section-title">
+                            <i class="fas fa-users"></i>
+                            Top Advocates Analysis
+                        </h2>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card chart-card">
+                            <div class="card-header">
+                                <h5><i class="fas fa-chart-doughnut me-2"></i>Top 100 Advocates by Cases</h5>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="advocateChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5>Top Advocates by Case Count</h5>
+                                <div>
+                                    <input type="number" id="topAdvocatesLimit" class="form-control d-inline-block" 
+                                           style="width: 100px;" value="10" min="1" max="100">
+                                    <button class="btn btn-primary btn-sm ms-2" onclick="updateTopAdvocates()">
+                                        Update
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Advocate</th>
+                                                <th>Cases</th>
+                                                <th>Total Value (Cr)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="topAdvocatesTable">
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- File Upload Section -->
+            <section class="mb-5">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5><i class="fas fa-upload me-2"></i>Upload New Data</h5>
+                            </div>
+                            <div class="card-body">
+                                <p>Upload a CSV file with case data to update the dashboard:</p>
+                                <input type="file" id="csvFile" class="form-control" accept=".csv">
+                                <small class="text-muted">
+                                    Expected columns: Sr. No., PARTY1, PARTY2, CASE VALUE, TRANSFEREE COURT, CASE YEAR, NEXT DATE BY HIGH COURT, ADVOCATE
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Papa Parse for CSV -->
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+    <!-- Custom JS -->
+    <script src="script.js"></script>
+</body>
+</html>
